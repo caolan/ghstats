@@ -1,0 +1,99 @@
+<html>
+  <head>
+    <title>GitHub Stats</title>
+    <script type="text/javascript" src="js/jquery-1.4.4.min.js"></script>
+    <script type="text/javascript" src="js/async.min.js"></script>
+    <script type="text/javascript" src="js/underscore-min.js"></script>
+    <script type="text/javascript" src="js/jquery.history.js"></script>
+    <script type="text/javascript" src="js/ghstats.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/ghstats.css" />
+
+    <script type="text/html" id="tmpl_user">
+      <li class="user" id="user_<%= login %>">
+        <h2><a href="https://github.com/<%= login %>"><%= name %></a></h2>
+        <img src="http://www.gravatar.com/avatar/<%= gravatar_id %>" alt="<%= name %>" title="<%= name %>" class="avatar" />
+        <div class="icon remove">X</div>
+        <ul class="stats">
+          <li class="followers">
+            <span class="name">Followers</span>
+            <span class="bar"></span>
+            <span class="value"><%= followers_count %></span>
+          </li>
+          <li class="watchers">
+            <span class="name">Watchers</span>
+            <span class="bar"></span>
+            <span class="value"><%= total_watchers %></span>
+          </li>
+        </ul>
+      </li>
+    </script>
+
+    <script type="text/javascript">
+      var tmpl_user = _.template($('#tmpl_user').html());
+      var users = [];
+
+      function loadHash(hash) {
+        users = hash ? hash.split(','): [];
+        async.map(users, ghstats.get, function (err, users) {
+          if (err) alert(err);
+          $('#users').html(_.map(users, tmpl_user).join(''));
+          updateCharts();
+        });
+      };
+
+      function addUser(user) {
+        users.push(user);
+        $.history.load(_.uniq(users).join(','));
+      };
+
+      function removeUser(user) {
+        users = _.without(users, user);
+        $.history.load(users.join(','));
+      };
+
+      function updateChart(stat, highest) {
+        $('.' + stat).each(function () {
+          var val = parseInt($('.value', this).text());
+          $('.bar', this).css({width: 70*(val/highest) + '%'});
+        });
+      }
+
+      function updateCharts() {
+        var keys = [];
+        $('.stats:first>li').each(function () {
+          keys.push($(this).attr('class'));
+        });
+
+        var highest = 1;
+        $('.value').each(function () {
+          var val = parseInt($(this).text());
+          if (val > highest) highest = val;
+        });
+
+        _.each(keys, function (k) {
+          updateChart(k, highest);
+        });
+      };
+
+      $(function () {
+        $.history.init(loadHash);
+        $('#add_username').click(function (ev) {
+          addUser(prompt('Enter a github username'));
+        });
+        $('.remove').live('click', function (ev) {
+          removeUser($(this).parent().attr('id').replace(/^user_/,''));
+        });
+      });
+    </script>
+
+  </head>
+  <body>
+    <h1>GitHub Stats</h1>
+    <ul id="users"></ul>
+    <div id="add_username">
+      <span class="icon">=</span>
+      <span class="label">Add username</span>
+    </div>
+  </body>
+</html>
