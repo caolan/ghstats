@@ -120,3 +120,11 @@ ul.stats li .name {
 .followers .bar {
     background-color: #9DB857;
 }
+
+#footer {
+    font-size: 92%;
+    position: absolute;
+    padding: 1em;
+    bottom: 0;
+    right: 0;
+}
