@@ -123,7 +123,7 @@ ul.stats li .name {
 
 #footer {
     font-size: 92%;
-    position: absolute;
+    position: fixed;
     padding: 1em;
     bottom: 0;
     right: 0;
